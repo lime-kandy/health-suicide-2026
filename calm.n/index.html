@@ -10,8 +10,10 @@ h1{margin:0;font-size:clamp(1.25rem,4.2vw,1.9rem);letter-spacing:-.02em}
 .logo{height:52px;max-width:32vw;object-fit:contain}
 main{flex:1;width:100%;max-width:720px;margin:0 auto;padding:16px}
 .card{background:var(--card);border-radius:var(--r);padding:24px;margin-bottom:16px;border:1px solid var(--line)}
-.bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:16px}
-.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(4px,1.6vw,8px);margin-bottom:16px}
+.dots span{width:clamp(12px,3.6vw,18px);height:clamp(12px,3.6vw,18px);border-radius:50%;background:var(--line);transition:background .3s,box-shadow .3s}
+.dots span.on{background:var(--ac)}
+.dots span.cur{box-shadow:0 0 0 3px var(--soft),0 0 0 5px var(--ac)}
 .q{font-size:1.12rem;font-weight:700;margin:0 0 14px;word-break:keep-all}
 .opts{display:grid;gap:8px}
 .opts label{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;cursor:pointer}
@@ -40,7 +42,7 @@ body{background:linear-gradient(180deg,#e9f0e6 0%,#f6efd9 100%) fixed}.card{box-
 <p>총 15문항이며 약 3분이 걸려요. 정답은 없으니 요즘 나의 모습에 가장 가까운 답을 골라 주세요. 답변은 어디에도 저장되지 않아요.</p>
 <button id="go">시작하기</button>
 </section>
-<div id="prog" class="bar hide"><i></i></div>
+<div id="prog" class="dots hide" aria-label="진행 상태"></div>
 <div id="quiz"></div>
 <section id="result" class="hide">
 <div class="card"><p>나의 점수: <span id="sc" class="score"></span>점 (15~75점)</p></div>
@@ -86,17 +88,19 @@ const $=s=>document.querySelector(s);
 const opts=i=>O.map(([t,v])=>`<label><input type="radio" name="q${i}" value="${v}" ${A[i]==v?"checked":""}>${t}</label>`).join("");
 function render(){
  if(MODE=="step"){
-  $("#quiz").innerHTML=`<div class="card"><p style="opacity:.7;margin:0">${c+1} / ${Q.length}</p><p class="q">${Q[c]}</p><div class="opts">${opts(c)}</div><div class="nav"><button class="ghost" id="pv" ${c?"":"disabled"}>이전</button><button id="nx" ${A[c]?"":"disabled"}>${c==Q.length-1?"결과 보기":"다음"}</button></div></div>`;
+  $("#quiz").innerHTML=`<div class="card"><p style="opacity:.7;margin:0">${c+1} / ${Q.length}</p><p class="q">${Q[c]}</p><div class="opts">${opts(c)}</div><div class="nav"><button class="ghost" id="pv" ${c?"":"disabled"}>이전</button><button id="nx" ${nextOff()?"disabled":""}>${c==Q.length-1?"결과 보기":"다음"}</button></div></div>`;
  }else{
   $("#quiz").innerHTML=Q.map((q,i)=>`<div class="card"><p class="q">${i+1}. ${q}</p><div class="opts">${opts(i)}</div></div>`).join("")+`<div class="nav" style="justify-content:center"><button id="sub" disabled>결과 보기</button></div>`;
  }
  bar();
 }
-function bar(){$(".bar i").style.width=A.filter(Boolean).length/Q.length*100+"%"}
+function bar(){$("#prog").innerHTML=Q.map((_,i)=>`<span class="${A[i]?"on":""}${MODE=="step"&&i==c?" cur":""}"></span>`).join("")}
+// 다음 버튼 상태: 단계형은 마지막 문항(결과 보기)에서만 전 문항 응답 필요
+function nextOff(){return MODE=="step"?(c==Q.length-1&&A.includes(0)):A.includes(0)}
 $("#quiz").addEventListener("change",e=>{
  A[+e.target.name.slice(1)]=+e.target.value;bar();
  const b=$("#nx")||$("#sub");
- if(b)b.disabled=MODE=="step"?!A[c]:A.includes(0);
+ if(b)b.disabled=nextOff();
 });
 $("#quiz").addEventListener("click",e=>{
  const id=e.target.id;
