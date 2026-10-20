@@ -62,6 +62,8 @@ body{background:linear-gradient(180deg,#e9f0e6 0%,#f6efd9 100%) fixed}.card{box-
 </section>
 </main>
 <footer>2026 2학년 자살 예방 캠페인</footer>
+<!-- 참여자 수 집계: GoatCounter (방문 수 + 검사 완료 수, 답변은 전송하지 않음) -->
+<script data-goatcounter="https://kandy.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <script>
 const MODE="step";
 // 질문은 여기서 수정하세요 (15문항, 모든 문항은 '그렇다'일수록 힘든 상태를 뜻하도록 작성)
@@ -110,6 +112,7 @@ $("#quiz").addEventListener("click",e=>{
 });
 function done(){
  const s=A.reduce((a,b)=>a+b,0);
+ try{window.goatcounter&&goatcounter.count({path:'test-complete',title:'검사 완료',event:true})}catch(e){} // 완료 인원 집계(점수·답변 미전송)
  const k=s<40?1:s<60?2:3; // 15~39 / 40~59 / 60~
  $("#quiz").classList.add("hide");$("#prog").classList.add("hide");
  $("#sc").textContent=s;$("#result").classList.remove("hide");$("#r"+k).classList.remove("hide");
